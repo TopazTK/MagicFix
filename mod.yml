@@ -1,0 +1,9 @@
+title: Insta-Magic!
+originalAuthor: TopazTK
+description: Fixes Magic not appearing in the Command Menu upon receiving. Requires LuaEngine Reborn.
+assets:
+- name: scripts/MagicFix.lua
+  method: copy
+  source:
+  - name: MagicFix.lua
+
