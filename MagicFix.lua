@@ -19,6 +19,7 @@ function _OnFrame()
     MagicRead = ReadInt(MagicFirst) + ReadShort(MagicSecond)
     
     if ReadByte(LoadByte) == 0x00 and MagicList[1] ~= nil then
+        print("")
         ConsolePrint("Resetting Magic Memory!", 1)
         MagicList = {}
     end
@@ -38,17 +39,17 @@ function _OnFrame()
                     goto continue
                 end
 
-                print("\n")
-                ConsolePrint("Magic Name: " .. _readString, 1)
+                print("")
+                ConsolePrint("Magic Name: " .. _readString, 0)
                 
                 _sizeRead = CallReturn(0x39E2F0, MEMORY_OFFSET + _magicPoint + 0x04)  
                 _allocMemory = CallReturn(0x150030, _sizeRead + 0x800)  
 
-                ConsolePrint("Allocated Region: 0x" .. string.format("%x", MEMORY_OFFSET + _allocMemory), 1)
+                ConsolePrint("Allocated Region: 0x" .. string.format("%x", MEMORY_OFFSET + _allocMemory), 0)
 
                 JumpFunction(0x39E4E0, MEMORY_OFFSET + _magicPoint + 0x04, MEMORY_OFFSET + _allocMemory)
 
-                ConsolePrint("Loaded BAR to: 0x" .. string.format("%x", MEMORY_OFFSET + _allocMemory), 1)
+                ConsolePrint("Loaded BAR to: 0x" .. string.format("%x", MEMORY_OFFSET + _allocMemory), 0)
 
                 BAR_OFFSET = ReadInt(MEMORY_OFFSET + _allocMemory + 0x08, true)
 
@@ -61,7 +62,7 @@ function _OnFrame()
                 WriteLong(0x24BCC42 + (0x50 * i), MEMORY_OFFSET + _allocMemory + MAG_OFFSET)
                 WriteLong(0x24BCC52 + (0x50 * i), MEMORY_OFFSET + _allocMemory + PAX_OFFSET + 0x10)
 
-                ConsolePrint("Magic Details at: 0x" .. string.format("%x", BASE_ADDRESS + 0x24BCC32 + (0x50 * i)), 1)
+                ConsolePrint("Magic Details at: 0x" .. string.format("%x", BASE_ADDRESS + 0x24BCC32 + (0x50 * i)), 0)
 
                 EXEC_OFFSET = EXE_ADDRESS + 0x2A21198 + (0x50 * i)
 
@@ -76,21 +77,26 @@ function _OnFrame()
                     end
                 end
 
-                for z = 0, 5 do
-                    MAGIC_COMMAND = ReadShort(0x24AA33A + (0x02 * z))
-                    
-                    if MAGIC_COMMAND == tableMagic[i + 1] then
-                        break
-                    elseif MAGIC_COMMAND == 0x00 then
-                        WriteByte(0x24AA33A + (0x02 * z), tableMagic[i + 1])
-                        ConsolePrint("Command Written to: 0x" .. string.format("%x", BASE_ADDRESS + 0x24AA33A + (0x02 * z)), 1)
-                        break
-                    end
-                end
-                
                 ::continue::
             end
         end
+
+        print("")
+        WriteLong(0x24AA33A, 0x00)
+
+        MAGIC_OFFSET = 0x00
+
+        for i = 0, 5 do
+            _magicPoint = CallReturn(0x3C3240, i)
+            
+            if _magicPoint ~= 0x00 then
+                WriteByte(0x24AA33A + (0x02 * MAGIC_OFFSET), tableMagic[i + 1])
+                ConsolePrint("Command Written to: 0x" .. string.format("%x", BASE_ADDRESS + 0x24AA33A + (0x02 * MAGIC_OFFSET)), 1)
+                MAGIC_OFFSET = MAGIC_OFFSET + 0x01
+            end
+        end
+
+        print("")
         
         for i = 1, 6 do
             if MagicList[i] ~= nil then
